@@ -1,0 +1,46 @@
+/**
+ * Example HexTelegram plugin — works with /plugin install.
+ * Copy this file, rename commands, reply to it with /plugin in Telegram.
+ * Non-commercial (HXZ License).
+ */
+"use strict";
+
+
+module.exports = {
+  name: "hello",
+  version: "1.0.0",
+  description: "Example plugin — hello/ping/echo.",
+
+  commands: {
+    hello: {
+      description: "Say hello",
+      usage: "/hello [name]",
+      handler: async (ctx, args) => {
+        const name = String(args || "").trim().slice(0, 50) || (ctx.from && ctx.from.first_name) || "there";
+        await ctx.reply(`👋 Hello, ${name}! (from plugin \`hello\`)`, { parse_mode: "Markdown" });
+      },
+    },
+    ping: async (ctx) => {
+      const t0 = Date.now();
+      const m = await ctx.reply("🏓 pong…");
+      try {
+        await ctx.telegram.editMessageText(m.chat.id, m.message_id, undefined, `🏓 pong (${Date.now() - t0}ms)`);
+      } catch {}
+    },
+    echo: {
+      description: "Echo back text",
+      usage: "/echo <text>",
+      handler: async (ctx, args) => {
+        if (!String(args || "").trim()) {
+          await ctx.reply("Usage: /echo <text>");
+          return;
+        }
+        await ctx.reply(String(args).slice(0, 1000));
+      },
+    },
+  },
+
+  onLoad(api) {
+    if (api && api.log) api.log("hello plugin loaded");
+  },
+};

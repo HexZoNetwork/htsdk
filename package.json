@@ -1,0 +1,13 @@
+{
+  "name": "htsdk",
+  "version": "1.0.0",
+  "description": "HexTelegram SDK, build custom agents + plugins for HexTelegram",
+  "main": "index.js",
+  "type": "commonjs",
+  "license": "SEE LICENSE IN LICENCE",
+  "keywords": ["hextelegram", "telegram", "bot", "sdk", "plugins", "ai", "agent"],
+  "scripts": {
+    "example": "node examples/custom-agent.js",
+    "test": "node -e \"require('./index.js'); require('./plugin.js'); require('./auth-providers.js'); console.log('htsdk ok')\""
+  }
+}
