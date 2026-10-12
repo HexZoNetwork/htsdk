@@ -13,7 +13,19 @@
 * 🤖 **Build your own agent** speaking the same OpenAI-compatible protocol.
 * 🔐 **Define auth providers** add your costum provinder
 
-Require Node 18+.
+Require Node 18+. Full guide with why/how/examples: [DOCS.md](./DOCS.md).
+
+## Install (no npm publish needed)
+```bash
+npm install github:HexZoNetwork/htsdk
+```
+
+```js
+const { definePlugin, createAgent } = require("htsdk");
+```
+
+That's it — git install, no registry publish step. Works today, even before
+the first npm release (after release, `npm install htsdk` works too).
 
 ## Layout
 
@@ -28,7 +40,8 @@ htsdk/
 │   └── antigravity-provider.js← provider skeleton (translation points)
 ├── package.json
 ├── LICENCE             ← HXZ non-commercial
-└── README.md
+├── README.md
+└── DOCS.md             ← full documentation (how/why/examples)
 ```
 
 ## Quick start:
