@@ -1,5 +1,5 @@
 /**
- * Example custom agent built on htsdk (no Telegram wiring — bring your own).
+ * Example custom agent built on htsdk (no Telegram wiring - bring your own).
  * Run: node examples/custom-agent.js
  * Env: HT_BASE_URL, HT_API_KEY, HT_MODEL
  * Non-commercial (HXZ License).

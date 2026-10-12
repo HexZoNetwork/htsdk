@@ -1,5 +1,5 @@
 <div align="center">
-  <h1>htsdk — HexTelegram SDK</h1>
+  <h1>htsdk - HexTelegram SDK</h1>
   <p>Build custom agents + plugins for <b>HexTelegram</b> by <b>HexzoNetwork</b></p>
 </div>
 
@@ -24,7 +24,7 @@ npm install github:HexZoNetwork/htsdk
 const { definePlugin, createAgent } = require("htsdk");
 ```
 
-That's it — git install, no registry publish step. Works today, even before
+That's it - git install, no registry publish step. Works today, even before
 the first npm release (after release, `npm install htsdk` works too).
 
 ## Layout
@@ -62,12 +62,12 @@ node -e "require('./index.js').definePlugin(require('./my-plugin.js')); console.
 3. Try your commands, manage with:
 
 ```
-/pl ls            — list plugins
-/pl info <id>     — details
-/pl reload        — reload all after edits
-/pl off <id>      — disable
-/pl on <id>       — enable
-/pl del <id>      — delete
+/pl ls            - list plugins
+/pl info <id>     - details
+/pl reload        - reload all after edits
+/pl off <id>      - disable
+/pl on <id>       - enable
+/pl del <id>      - delete
 ```
 
 Plugin contract:
@@ -94,9 +94,9 @@ const { definePlugin } = require("htsdk");
 module.exports = definePlugin({ name: "hello", commands: { /* ... */ } });
 ```
 
-* `ctx` — Telegraf context (`ctx.reply`, `ctx.telegram`, `ctx.from`, …).
-* `args` — text after the command (`/echo hi` → `"hi"`).
-* `api` — `{ bot, config, runTool, storage, chat, log, pluginsDir }`.
+* `ctx` - Telegraf context (`ctx.reply`, `ctx.telegram`, `ctx.from`, …).
+* `args` - text after the command (`/echo hi` → `"hi"`).
+* `api` - `{ bot, config, runTool, storage, chat, log, pluginsDir }`.
 
 Rules:
 
@@ -116,7 +116,7 @@ console.log(res.content, res.toolCalls);
 ```
 
 See `examples/custom-agent.js`. Wire `agent.chat` into Telegraf, CLI, or HTTP
-as you like — same `{ model, messages, tools }` shape the bot uses.
+as you like - same `{ model, messages, tools }` shape the bot uses.
 
 ## Auth providers
 
@@ -134,5 +134,5 @@ To add your own backend, implement `defineProvider` (see
 
 ## License
 
-HXZ License © 2026 — HexzoNetwork. Non-commercial use only; commercial use
+HXZ License © 2026 - HexzoNetwork. Non-commercial use only; commercial use
 needs written permission.

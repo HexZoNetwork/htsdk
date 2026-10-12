@@ -1,17 +1,17 @@
-# htsdk — Documentation
+# htsdk - Documentation
 
 > **What:** helpers to build things for **HexTelegram** (the Telegram AI bot by HexzoNetwork).
 > **Why:** so anyone can extend the bot (new commands), build their own compatible agent,
-> or add new login backends — without touching the bot's core files.
+> or add new login backends - without touching the bot's core files.
 > **License:** non-commercial only (HXZ). See [LICENCE](./LICENCE).
 
 ## Contents
 
 1. [Install](#1-install)
 2. [What you can do](#2-what-you-can-do)
-3. [Track A — Plugins (add bot commands)](#3-track-a--plugins-add-bot-commands)
-4. [Track B — Custom agents](#4-track-b--custom-agents)
-5. [Track C — Auth providers](#5-track-c--auth-providers)
+3. [Track A - Plugins (add bot commands)](#3-track-a--plugins-add-bot-commands)
+4. [Track B - Custom agents](#4-track-b--custom-agents)
+5. [Track C - Auth providers](#5-track-c--auth-providers)
 6. [API reference](#6-api-reference)
 7. [Limits & safety](#7-limits--safety)
 8. [Troubleshooting](#8-troubleshooting)
@@ -52,7 +52,7 @@ node -e "require('./index.js')"           # sanity check from the folder
 
 ---
 
-## 3. Track A — Plugins (add bot commands)
+## 3. Track A - Plugins (add bot commands)
 
 ### Why
 
@@ -120,7 +120,7 @@ module.exports = definePlugin({
 node -e "require('htsdk').definePlugin(require('./my-plugin.js')); console.log('plugin valid')"
 ```
 
-**4. Install it into the bot** (owner only) — send `my-plugin.js` as a document,
+**4. Install it into the bot** (owner only) - send `my-plugin.js` as a document,
 reply to it with:
 
 ```
@@ -145,23 +145,23 @@ Custom id: `/plugin myname` (replying to the file). From a URL:
 /pl del hello       ← delete + remove files
 ```
 
-### Explanation — what the bot gives your code
+### Explanation - what the bot gives your code
 
 Every command handler is called as `handler(ctx, args, api)`:
 
-- **`ctx`** — the Telegraf context. `ctx.reply(text)`, `ctx.telegram.*` (full Bot API),
+- **`ctx`** - the Telegraf context. `ctx.reply(text)`, `ctx.telegram.*` (full Bot API),
   `ctx.from` (sender), `ctx.chat`, `ctx.message`. If you know Telegraf, you know `ctx`.
-- **`args`** — the text after the command. `/echo hi there` → `"hi there"`.
+- **`args`** - the text after the command. `/echo hi there` → `"hi there"`.
   Empty string when the user sends just `/echo`.
-- **`api`** — bot services:
-  - `api.bot` — the Telegraf instance (advanced use).
-  - `api.config` — bot config (read-only habits: read values, don't rewrite secrets).
-  - `api.runTool(name, args)` — call a bot tool (`shell_exec`, `file_read`, `web_fetch`, …).
-  - `api.storage` — persistent notes: `get(id)` → `{content, updated} | null`,
+- **`api`** - bot services:
+  - `api.bot` - the Telegraf instance (advanced use).
+  - `api.config` - bot config (read-only habits: read values, don't rewrite secrets).
+  - `api.runTool(name, args)` - call a bot tool (`shell_exec`, `file_read`, `web_fetch`, …).
+  - `api.storage` - persistent notes: `get(id)` → `{content, updated} | null`,
     `list()` → `[{id, bytes, updated, preview}]`, `save(id, content)` → `true/false`.
-  - `api.chat` — `chatStream(messages, tools, …)`, `currentProvider()`, `currentChatModel()`.
-  - `api.log(...)` — log with a `[plugin]` prefix.
-  - `api.pluginsDir` — where plugins live on disk.
+  - `api.chat` - `chatStream(messages, tools, …)`, `currentProvider()`, `currentChatModel()`.
+  - `api.log(...)` - log with a `[plugin]` prefix.
+  - `api.pluginsDir` - where plugins live on disk.
 
 `onLoad(api)` runs when the plugin loads (register timers, warm caches).
 `onUnload(api)` runs before unload/reload/delete (clear timers, close handles).
@@ -212,13 +212,13 @@ noteread: async (ctx, args, api) => {
 },
 ```
 
-### Command routing — how it works
+### Command routing - how it works
 
 When any `/command` arrives, the bot checks enabled plugins **before** its own handlers.
 First plugin that owns the name runs; anything else falls through to built-ins.
 That means:
 
-- Two plugins can't own the same name — first loaded wins, so pick distinctive names.
+- Two plugins can't own the same name - first loaded wins, so pick distinctive names.
 - You **cannot** override built-ins (`/start`, `/model`, `/login`, `/logout`,
   `/plugin`, `/pl`, `/str`, …). The bot keeps those.
 
@@ -229,7 +229,7 @@ Or edit on the server and run `/pl reload` directly.
 
 ---
 
-## 4. Track B — Custom agents
+## 4. Track B - Custom agents
 
 ### Why
 
@@ -258,7 +258,7 @@ console.log(res.toolCalls);          // [{id, type:'function', function:{name, a
 console.log(res.finishReason);       // e.g. "stop"
 ```
 
-With tools (the model can ask to call them — **you** execute and reply):
+With tools (the model can ask to call them - **you** execute and reply):
 
 ```js
 const res = await agent.chat(
@@ -278,7 +278,7 @@ const followUp = await agent.chat([
 ]);
 ```
 
-See `examples/custom-agent.js` — runnable scaffold (`HT_BASE_URL` / `HT_API_KEY` / `HT_MODEL`).
+See `examples/custom-agent.js` - runnable scaffold (`HT_BASE_URL` / `HT_API_KEY` / `HT_MODEL`).
 
 ### Helpers
 
@@ -292,7 +292,7 @@ commandArgs("/echo hi");      // → { cmd: "echo", arg: "hi" } (null if not a c
 
 ---
 
-## 5. Track C — Auth providers
+## 5. Track C - Auth providers
 
 ### Why
 
@@ -339,7 +339,7 @@ module.exports = defineProvider({
 See `examples/antigravity-provider.js` for the annotated skeleton.
 Reference implementation: the bot's own `auth.js` (Antigravity translation:
 OpenAI messages → Gemini `contents`, schema cleaning, SSE unwrap, account rotation).
-A provider only becomes usable once wired into the bot core — open it as a proposal
+A provider only becomes usable once wired into the bot core - open it as a proposal
 against the bot repo with this skeleton filled in.
 
 ---
@@ -386,17 +386,17 @@ optional `{ label, description }`. `id`: `[A-Za-z0-9_-]`, max 32.
 
 ## 7. Limits & safety
 
-- **Install is owner-only.** Plugins are arbitrary code — the bot trusts whoever
+- **Install is owner-only.** Plugins are arbitrary code - the bot trusts whoever
   installs them completely. Only the owner can `/plugin` or `/pl …`.
 - **Running is not:** any allowed user can run an installed plugin's commands.
 - **Single file:** `.js`/`.cjs`, ≤500KB. **Bundle:** `.zip`, ≤5MB, with `index.js`
   (or `main.js` / `plugin.js`) at the root.
 - **Ids:** `[A-Za-z0-9_-]`, max 48. **Commands:** `[A-Za-z0-9_]`, max 32.
 - On install the bot scans for risky patterns (env/secret reads, process spawn,
-  network, destructive shell) and **shows** them — it doesn't block, so read the flags.
+  network, destructive shell) and **shows** them - it doesn't block, so read the flags.
 - Keep handlers fast; long work should reply progressively (progress message → edits),
   same as the bot core does. Always `await ctx.reply(...)` inside `try/catch` if the
-  chat may be unavailable — a throwing plugin only fails its own command.
+  chat may be unavailable - a throwing plugin only fails its own command.
 - Never log or send `api.config` secrets (tokens, keys). The core refuses such
   requests; your plugin should too.
 
@@ -405,13 +405,13 @@ optional `{ label, description }`. `id`: `[A-Za-z0-9_-]`, max 32.
 | Symptom | Cause → fix |
 |---|---|
 | `definePlugin: bad command name` | Name has `-`/`.`/spaces → use letters, digits, `_` |
-| `/plugin` says "Only .js/.zip" | You replied to a photo/text, not the **document** — send as file |
+| `/plugin` says "Only .js/.zip" | You replied to a photo/text, not the **document** - send as file |
 | `Zip has no index.js…` | Entry file must be at zip **root**, not in a subfolder |
 | `Syntax error: …` | Run the file with `node --check my-plugin.js` first |
 | Command does nothing | Name collides with a built-in or another plugin → rename; check `/pl ls` shows it ✅ enabled |
-| `⚠️ Flags: …` on install | Informational risky-pattern hits — review, `/pl del <id>` if unsure |
+| `⚠️ Flags: …` on install | Informational risky-pattern hits - review, `/pl del <id>` if unsure |
 | `require("htsdk")` fails | You copied files, not installed: `npm install github:HexZoNetwork/htsdk` or `require("./htsdk")` relatively |
 
 ---
 
-*SDK version 1.0.0 · mirrors bot commands `/plugin`, `/pl`, `/login` · HXZ License — non-commercial.*
+*SDK version 1.0.0 · mirrors bot commands `/plugin`, `/pl`, `/login` · HXZ License - non-commercial.*

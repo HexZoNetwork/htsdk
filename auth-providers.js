@@ -1,5 +1,5 @@
 /**
- * htsdk/auth-providers — define custom OAuth/API providers compatible with
+ * htsdk/auth-providers - define custom OAuth/API providers compatible with
  * HexTelegram's auth framework (auth.js in the bot).
  *
  * A provider translates between OpenAI-style chat calls and your backend.

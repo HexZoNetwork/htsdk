@@ -1,5 +1,5 @@
 /**
- * htsdk/plugin — helpers for HexTelegram plugins (re-exported by index.js).
+ * htsdk/plugin - helpers for HexTelegram plugins (re-exported by index.js).
  * Non-commercial (HXZ License).
  */
 "use strict";

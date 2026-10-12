@@ -1,5 +1,5 @@
 /**
- * htsdk — HexTelegram SDK (non-commercial, HXZ License).
+ * htsdk - HexTelegram SDK (non-commercial, HXZ License).
  *
  * Build your own agent compatible with HexTelegram, or write plugins that add
  * commands to the bot. No dependencies.
@@ -89,7 +89,7 @@ function commandArgs(text) {
 
 /**
  * Minimal agent scaffold compatible with HexTelegram tool-calling shape.
- * This does NOT include Telegram wiring — bring your own Telegraf/bot.
+ * This does NOT include Telegram wiring - bring your own Telegraf/bot.
  * It gives you the message helpers + OpenAI-compatible chat caller so your
  * custom agent speaks the same protocol (and can reuse auth-providers).
  *

@@ -1,5 +1,5 @@
 /**
- * Example HexTelegram plugin — works with /plugin install.
+ * Example HexTelegram plugin - works with /plugin install.
  * Copy this file, rename commands, reply to it with /plugin in Telegram.
  * Non-commercial (HXZ License).
  */
@@ -9,7 +9,7 @@
 module.exports = {
   name: "hello",
   version: "1.0.0",
-  description: "Example plugin — hello/ping/echo.",
+  description: "Example plugin - hello/ping/echo.",
 
   commands: {
     hello: {

@@ -14,12 +14,12 @@ module.exports = defineProvider({
   description: "Translate OpenAI messages -> Gemini-style contents, call gateway, map back.",
 
   async authorize() {
-    throw new Error("Not implemented — see bot auth.js authorizeAntigravity()");
+    throw new Error("Not implemented - see bot auth.js authorizeAntigravity()");
   },
 
   async exchange({ code, verifier }) {
     void code; void verifier;
-    throw new Error("Not implemented — see bot auth.js exchangeAntigravity()");
+    throw new Error("Not implemented - see bot auth.js exchangeAntigravity()");
   },
 
   async refresh(account) {
@@ -28,6 +28,6 @@ module.exports = defineProvider({
 
   async chat({ token, model, messages, tools }) {
     void token; void model; void messages; void tools;
-    throw new Error("Not implemented — see bot auth.js antigravityChat()");
+    throw new Error("Not implemented - see bot auth.js antigravityChat()");
   },
 });
