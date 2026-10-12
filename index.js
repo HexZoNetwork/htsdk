@@ -4,7 +4,7 @@
  * Build your own agent compatible with HexTelegram, or write plugins that add
  * commands to the bot. No dependencies.
  *
- *   const { definePlugin, createAgent, splitTG } = require("htsdk");
+ *   const { definePlugin, testPlugin, createAgent, splitTG } = require("htsdk");
  *
  * Plugin contract (same as HexTelegram `plugins/`):
  *   module.exports = definePlugin({
@@ -19,11 +19,18 @@
  *     onLoad(api) {}, onUnload(api) {},
  *   });
  *
+ *   module.exports = definePlugin((api) => ({ name: "lazy", commands: { ... } }));
+ *
+ *   const r = await testPlugin("./my-plugin.js", "hello", "world");
+ *   console.log(r.ok, r.replies);
+ *
  * `ctx` is a Telegraf context. `args` is the text after the command.
  * `api` is { bot, config, runTool, storage, chat, log }.
  */
 
 "use strict";
+
+const path = require("path");
 
 function validId(id) {
   return /^[A-Za-z0-9_-]{1,48}$/.test(String(id || ""));
@@ -32,8 +39,8 @@ function validCmd(name) {
   return /^[A-Za-z0-9_]{1,32}$/.test(String(name || ""));
 }
 
-function definePlugin(def) {
-  if (!def || typeof def !== "object") throw new Error("definePlugin: def must be an object");
+function validatePluginObject(def) {
+  if (!def || (typeof def !== "object" && typeof def !== "function")) throw new Error("definePlugin: def must be an object");
   const out = {
     name: String(def.name || "unnamed").slice(0, 64),
     version: String(def.version || "1.0.0").slice(0, 32),
@@ -62,6 +69,59 @@ function definePlugin(def) {
     out.onUnload = def.onUnload;
   }
   return out;
+}
+
+function definePlugin(def) {
+  if (typeof def === "function" && !def.commands) {
+    const factory = def;
+    return function definedPluginFactory(api) {
+      return validatePluginObject(factory(api) || {});
+    };
+  }
+  return validatePluginObject(def);
+}
+
+async function testPlugin(pluginDefOrPath, command, args = "") {
+  let mod = pluginDefOrPath;
+  if (typeof mod === "string") {
+    const resolved = path.resolve(mod);
+    delete require.cache[resolved];
+    mod = require(resolved);
+    if (mod && mod.__esModule && mod.default) mod = mod.default;
+  }
+  if (typeof mod === "function" && !mod.commands) mod = (await mod({ log() {} })) || {};
+  const plugin = validatePluginObject(mod);
+  const name = String(command || "").replace(/^\//, "").toLowerCase();
+  const entry = plugin.commands[name];
+  if (!entry) throw new Error(`testPlugin: unknown command '${command}' (have: ${Object.keys(plugin.commands).join(", ") || "none"})`);
+  const handler = typeof entry === "function" ? entry : entry.handler;
+  const replies = [];
+  const edits = [];
+  const fakeCtx = {
+    from: { id: 1, first_name: "Tester", username: "tester" },
+    chat: { id: 1, type: "private" },
+    message: { message_id: 1, text: `/${name}${args ? " " + args : ""}` },
+    reply: async (text) => { replies.push(String(text)); return { chat: { id: 1 }, message_id: replies.length }; },
+    telegram: {
+      editMessageText: async (chatId, messageId, _unused, text) => { edits.push(String(text)); return true; },
+      sendMessage: async (_chatId, text) => { replies.push(String(text)); return { message_id: replies.length }; },
+    },
+  };
+  const api = {
+    bot: null,
+    config: {},
+    runTool: async () => "(test stub: no live tools)",
+    storage: { get: () => null, list: () => [], save: () => false },
+    chat: null,
+    log() {},
+    pluginsDir: "",
+  };
+  try {
+    await handler(fakeCtx, String(args || ""), api);
+    return { ok: true, replies, edits };
+  } catch (e) {
+    return { ok: false, replies, edits, error: String((e && e.message) || e) };
+  }
 }
 
 function splitTG(text, n = 4000) {
@@ -138,4 +198,4 @@ function createAgent(opts = {}) {
   return { baseURL, model, chat, splitTG, commandArgs };
 }
 
-module.exports = { definePlugin, createAgent, splitTG, escapeMarkdown, commandArgs, validId, validCmd };
+module.exports = { definePlugin, testPlugin, createAgent, splitTG, escapeMarkdown, commandArgs, validId, validCmd };

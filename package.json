@@ -8,6 +8,6 @@
   "keywords": ["hextelegram", "telegram", "bot", "sdk", "plugins", "ai", "agent"],
   "scripts": {
     "example": "node examples/custom-agent.js",
-    "test": "node -e \"require('./index.js'); require('./plugin.js'); require('./auth-providers.js'); console.log('htsdk ok')\""
+    "test": "node -e \"(async () => { const s = require('./index.js'); require('./plugin.js'); require('./auth-providers.js'); const f = s.definePlugin(() => ({ commands: { hi: async () => {} } })); await f({}); const r = await s.testPlugin('./examples/hello-plugin.js', 'echo', 'hi'); if (!r.ok || r.replies[0] !== 'hi') throw new Error('testPlugin failed'); console.log('htsdk ok'); })().catch((e) => { console.error(e.message); process.exit(1); })\""
   }
 }

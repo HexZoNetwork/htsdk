@@ -6,6 +6,7 @@
 const base = require("./index.js");
 module.exports = {
   definePlugin: base.definePlugin,
+  testPlugin: base.testPlugin,
   splitTG: base.splitTG,
   escapeMarkdown: base.escapeMarkdown,
   commandArgs: base.commandArgs,

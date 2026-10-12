@@ -31,12 +31,13 @@ the first npm release (after release, `npm install htsdk` works too).
 
 ```
 htsdk/
-├── index.js            ← definePlugin, createAgent, splitTG, commandArgs
+├── index.js            ← definePlugin, testPlugin, createAgent, splitTG, commandArgs
 ├── plugin.js           ← plugin-only re-exports
 ├── auth-providers.js   ← defineProvider
 ├── examples/
 │   ├── hello-plugin.js        ← installable example (/hello /ping /echo)
 │   ├── custom-agent.js        ← minimal agent scaffold
+│   ├── own-agent.js           ← complete mini Telegram bot + tool loop
 │   └── antigravity-provider.js← provider skeleton (translation points)
 ├── package.json
 ├── LICENCE             ← HXZ non-commercial
@@ -51,6 +52,7 @@ htsdk/
 ```bash
 cp examples/hello-plugin.js my-plugin.js
 node -e "require('./index.js').definePlugin(require('./my-plugin.js')); console.log('plugin valid')"
+node -e "(async () => { const r = await require('./index.js').testPlugin('./my-plugin.js', 'hello'); console.log(r.ok, r.replies); })()"
 ```
 
 2. Send `my-plugin.js` to your bot as a document, reply to it with:
@@ -117,6 +119,9 @@ console.log(res.content, res.toolCalls);
 
 See `examples/custom-agent.js`. Wire `agent.chat` into Telegraf, CLI, or HTTP
 as you like - same `{ model, messages, tools }` shape the bot uses.
+
+Want Telegram wiring included? `examples/own-agent.js` is a complete mini bot
+(Telegraf + 4-round tool loop, `/new` included). Details in [DOCS.md](./DOCS.md).
 
 ## Auth providers
 

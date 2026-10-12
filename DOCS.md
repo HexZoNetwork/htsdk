@@ -114,10 +114,25 @@ module.exports = definePlugin({
 });
 ```
 
-**3. Check it locally:**
+Lazy form also works (same as the bot loader accepts it):
+
+```js
+module.exports = definePlugin((api) => ({
+  name: "hello",
+  commands: { hello: async (ctx) => { await ctx.reply("hi"); } },
+}));
+```
+
+**3. Check it locally (no live bot needed):**
 
 ```bash
 node -e "require('htsdk').definePlugin(require('./my-plugin.js')); console.log('plugin valid')"
+```
+
+Dry-run a command with a fake chat (captures replies, no Telegram needed):
+
+```bash
+node -e "(async () => { const r = await require('htsdk').testPlugin('./my-plugin.js', 'echo', 'hi'); console.log(r.ok, r.replies); })()"
 ```
 
 **4. Install it into the bot** (owner only) - send `my-plugin.js` as a document,
@@ -278,6 +293,19 @@ const followUp = await agent.chat([
 
 See `examples/custom-agent.js` - runnable scaffold (`HT_BASE_URL` / `HT_API_KEY` / `HT_MODEL`).
 
+### Your own Telegram bot
+
+`examples/own-agent.js` is a complete minimal bot: Telegram wiring (Telegraf) plus
+a 4-round tool loop with two local tools (`get_time`, `echo_text`). Copy it and
+grow it - add tools by extending the `TOOLS` list and `runLocalTool`:
+
+```bash
+npm install telegraf
+HT_BOT_TOKEN=123:abc HT_BASE_URL=https://api.openai.com/v1 HT_API_KEY=sk-... node examples/own-agent.js
+```
+
+Without the env vars it runs a scaffold self-check and exits, so it is safe to try.
+
 ### Helpers
 
 ```js
@@ -351,6 +379,14 @@ Validates and returns a plugin module. Throws with a plain-English reason on mis
 
 Command names: `[A-Za-z0-9_]`, max 32, case-insensitive (`/Ping` → `ping`).
 Handler signature: `async (ctx, args, api) => {}`.
+Lazy form: `definePlugin((api) => ({...}))` returns a factory the loader calls with `api`.
+
+### `testPlugin(pathOrModule, command, args?)`
+
+Dry-runs one command with a fake chat, no Telegram needed. Returns
+`{ ok, replies, edits }` or `{ ok: false, replies, edits, error }`.
+`api.runTool` / `storage` inside the dry run are stubs, so handlers that need
+live tools report that instead of failing mysteriously.
 
 ### `createAgent({ baseURL, apiKey, model })`
 
