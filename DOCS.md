@@ -217,6 +217,10 @@ Every command handler is called as `handler(ctx, args, api)`:
   - `api.storage` - persistent notes: `get(id)` → `{content, updated} | null`,
     `list()` → `[{id, bytes, updated, preview}]`, `save(id, content)` → `true/false`.
   - `api.chat` - `chatStream(messages, tools, …)`, `currentProvider()`, `currentChatModel()`.
+  - `api.ask(text, ctx)` - run a **full agent turn** as the user in the current chat:
+    thinking, tool calls (built-ins + plugin tools), streaming progress, history.
+    Returns truthy when delivered. Absent on older bots - check
+    `typeof api.ask === "function"` and keep a direct fallback.
   - `api.log(...)` - log with a `[plugin]` prefix.
   - `api.pluginsDir` - where plugins live on disk.
 
@@ -226,6 +230,25 @@ Every command handler is called as `handler(ctx, args, api)`:
 ### Examples
 
 Each snippet below is one entry for your `commands: { … }` map:
+
+**Agent-backed command (think instead of hardcoded logic):**
+
+```js
+scan: {
+  description: "Let the agent scan a URL",
+  usage: "/scan <https://...>",
+  handler: async (ctx, args, api) => {
+    const u = String(args || "").trim().split(/\s+/)[0];
+    if (!/^https?:\/\//i.test(u)) { await ctx.reply("Usage: /scan <https://...>"); return; }
+    if (api && typeof api.ask === "function") {
+      await api.ask(`Security-scan this URL like an analyst and report concisely: ${u}`, ctx);
+      return;
+    }
+    const out = await api.runTool("web_check", { url: u }, ctx);
+    await ctx.reply(String(out).slice(0, 3000));
+  },
+},
+```
 
 **Ping (measure round-trip):**
 

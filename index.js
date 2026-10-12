@@ -161,6 +161,7 @@ async function testPlugin(pluginDefOrPath, command, args = "") {
     runTool: async () => "(test stub: no live tools)",
     storage: { get: () => null, list: () => [], save: () => false },
     chat: null,
+    ask: async () => null,
     log() {},
     pluginsDir: "",
   };
@@ -190,7 +191,7 @@ async function testTool(pluginDefOrPath, toolName, args = {}) {
     try { argObj = JSON.parse(argObj); } catch { throw new Error("testTool: args string must be JSON"); }
   }
   const fakeCtx = { from: { id: 1 }, chat: { id: 1, type: "private" } };
-  const api = { bot: null, config: {}, runTool: async () => "(test stub)", storage: { get: () => null, list: () => [], save: () => false }, chat: null, log() {}, pluginsDir: "" };
+  const api = { bot: null, config: {}, runTool: async () => "(test stub)", storage: { get: () => null, list: () => [], save: () => false }, chat: null, ask: async () => null, log() {}, pluginsDir: "" };
   try {
     const result = await entry.handler(argObj || {}, fakeCtx, api);
     return { ok: true, result: typeof result === "string" ? result : JSON.stringify(result) };
@@ -214,7 +215,7 @@ async function testHook(pluginDefOrPath, hookName, ...hookArgs) {
   const fns = plugin.hooks[kind];
   if (!fns.length) throw new Error(`testHook: plugin has no '${kind}' hook`);
   const fakeCtx = { from: { id: 1 }, chat: { id: 1, type: "private" } };
-  const api = { bot: null, config: {}, runTool: async () => "(test stub)", storage: { get: () => null, list: () => [], save: () => false }, chat: null, log() {}, pluginsDir: "" };
+  const api = { bot: null, config: {}, runTool: async () => "(test stub)", storage: { get: () => null, list: () => [], save: () => false }, chat: null, ask: async () => null, log() {}, pluginsDir: "" };
   const calls = [];
   try {
     for (const fn of fns) {
