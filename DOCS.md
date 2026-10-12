@@ -72,9 +72,9 @@ cp examples/hello-plugin.js my-plugin.js
 
 ```js
 module.exports = {
-  name: "hello",                    // shown in /pl ls
+  name: "hello",
   version: "1.0.0",
-  description: "Says hello.",       // shown in /pl info
+  description: "Says hello.",
 
   commands: {
     hello: async (ctx, args, api) => {
@@ -98,8 +98,8 @@ module.exports = definePlugin({
       await ctx.reply("hi");
     },
     echo: {
-      description: "Echo back text",   // optional, shown in docs
-      usage: "/echo <text>",           // optional, shown on misuse
+      description: "Echo back text",
+      usage: "/echo <text>",
       handler: async (ctx, args, api) => {
         if (!String(args || "").trim()) {
           await ctx.reply("Usage: /echo <text>");
@@ -109,8 +109,8 @@ module.exports = definePlugin({
       },
     },
   },
-  onLoad(api) { api.log("hello loaded"); },    // optional
-  onUnload(api) {},                            // optional
+  onLoad(api) { api.log("hello loaded"); },
+  onUnload(api) {},
 });
 ```
 
@@ -243,7 +243,7 @@ gives you the same call shape, so prompts/tools you design for HexTelegram port 
 const { createAgent } = require("htsdk");
 
 const agent = createAgent({
-  baseURL: "https://api.openai.com/v1",  // any OpenAI-compatible endpoint
+  baseURL: "https://api.openai.com/v1",
   apiKey: process.env.HT_API_KEY,
   model: "gpt-4o-mini",
 });
@@ -253,9 +253,9 @@ const res = await agent.chat([
   { role: "user", content: "Summarize: HexTelegram in one line." },
 ]);
 
-console.log(res.content);            // text answer
-console.log(res.toolCalls);          // [{id, type:'function', function:{name, arguments}}]
-console.log(res.finishReason);       // e.g. "stop"
+console.log(res.content);
+console.log(res.toolCalls);
+console.log(res.finishReason);
 ```
 
 With tools (the model can ask to call them - **you** execute and reply):
@@ -269,8 +269,6 @@ const res = await agent.chat(
     parameters: { type: "object", properties: { expression: { type: "string" } } },
   } }],
 );
-// res.toolCalls → [{..., function:{ name:"calc", arguments:'{"expression":"14*14"}' }}]
-// run it yourself, then continue the conversation:
 const followUp = await agent.chat([
   { role: "user", content: "What is 14*14?" },
   { role: "assistant", content: "", tool_calls: [{ id: res.toolCalls[0].id, type: "function", function: res.toolCalls[0].function }] },
@@ -285,9 +283,9 @@ See `examples/custom-agent.js` - runnable scaffold (`HT_BASE_URL` / `HT_API_KEY`
 ```js
 const { splitTG, escapeMarkdown, commandArgs } = require("htsdk");
 
-splitTG(longText);            // → chunks ≤4000 chars (Telegram limit), split on \n
-escapeMarkdown(text);         // → escapes _ * ` [ ] for legacy Markdown
-commandArgs("/echo hi");      // → { cmd: "echo", arg: "hi" } (null if not a command)
+splitTG(longText);
+escapeMarkdown(text);
+commandArgs("/echo hi");
 ```
 
 ---
@@ -306,31 +304,23 @@ A *provider* is the translator between OpenAI-style chat calls and some backend.
 const { defineProvider } = require("htsdk/auth-providers.js");
 
 module.exports = defineProvider({
-  id: "my-gateway",                 // [A-Za-z0-9_-], max 32
+  id: "my-gateway",
   label: "My Gateway",
   description: "What backend this talks to.",
 
   async authorize() {
-    // Start login: build the provider's OAuth URL (+ PKCE), return:
-    // { url, verifier, state }
     throw new Error("not implemented");
   },
 
   async exchange({ code, verifier }) {
-    // User approved → trade code+verifier for tokens, return:
-    // { access, refresh, expires, email }
     throw new Error("not implemented");
   },
 
   async refresh(account) {
-    // Refresh an expired access token, return the updated account.
     return account;
   },
 
   async chat({ token, model, messages, tools }) {
-    // Translate messages/tools to your backend, POST, translate back.
-    // Must return { content, toolCalls, finishReason } where toolCalls =
-    // [{ id, type: "function", function: { name, arguments } }].
     throw new Error("not implemented");
   },
 });
