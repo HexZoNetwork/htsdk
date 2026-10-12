@@ -31,13 +31,14 @@ the first npm release (after release, `npm install htsdk` works too).
 
 ```
 htsdk/
-├── index.js            ← definePlugin, testPlugin, createAgent, splitTG, commandArgs
+├── index.js            ← definePlugin, testPlugin, testTool, createAgent, splitTG, commandArgs
 ├── plugin.js           ← plugin-only re-exports
 ├── auth-providers.js   ← defineProvider
 ├── examples/
 │   ├── hello-plugin.js        ← installable example (/hello /ping /echo)
 │   ├── custom-agent.js        ← minimal agent scaffold
 │   ├── own-agent.js           ← complete mini Telegram bot + tool loop
+│   ├── hooks-plugin.js        ← input/output/beforeTool/afterTool demo
 │   └── antigravity-provider.js← provider skeleton (translation points)
 ├── package.json
 ├── LICENCE             ← HXZ non-commercial
@@ -83,6 +84,16 @@ module.exports = {
     hello: async (ctx, args, api) => { await ctx.reply("hi"); },
     echo: { description: "...", usage: "/echo <text>",
             handler: async (ctx, args, api) => {} },
+  },
+  tools: {
+    shout_text: { description: "...", parameters: { type: "object", properties: {} },
+                  handler: async (args, ctx, api) => "..." },
+  },
+  hooks: {
+    input: async (text, ctx, api) => text,
+    output: async (text, ctx, api) => text,
+    beforeTool: async (name, args, ctx, api) => null,
+    afterTool: async (name, args, result, ctx, api) => result,
   },
   onLoad(api) {},
   onUnload(api) {},

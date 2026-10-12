@@ -16,6 +16,16 @@
  *       echo: { description: "...", usage: "/echo <text>",
  *               handler: async (ctx, args, api) => {} },
  *     },
+ *     tools: {
+ *       shout: { description: "...", parameters: {...},
+ *                handler: async (args, ctx, api) => "..." },
+ *     },
+ *     hooks: {
+ *       input: async (text, ctx, api) => text,
+ *       output: async (text, ctx, api) => text,
+ *       beforeTool: async (name, args, ctx, api) => null,
+ *       afterTool: async (name, args, result, ctx, api) => result,
+ *     },
  *     onLoad(api) {}, onUnload(api) {},
  *   });
  *
@@ -23,6 +33,9 @@
  *
  *   const r = await testPlugin("./my-plugin.js", "hello", "world");
  *   console.log(r.ok, r.replies);
+ *
+ *   const t = await testTool("./my-plugin.js", "shout", { text: "hi" });
+ *   console.log(t.ok, t.result);
  *
  * `ctx` is a Telegraf context. `args` is the text after the command.
  * `api` is { bot, config, runTool, storage, chat, log }.
@@ -39,6 +52,11 @@ function validCmd(name) {
   return /^[A-Za-z0-9_]{1,32}$/.test(String(name || ""));
 }
 
+function validTool(name) {
+  return /^[A-Za-z0-9_-]{1,32}$/.test(String(name || ""));
+}
+const HOOK_KINDS = ["input", "output", "beforeTool", "afterTool"];
+
 function validatePluginObject(def) {
   if (!def || (typeof def !== "object" && typeof def !== "function")) throw new Error("definePlugin: def must be an object");
   const out = {
@@ -46,6 +64,7 @@ function validatePluginObject(def) {
     version: String(def.version || "1.0.0").slice(0, 32),
     description: String(def.description || "").slice(0, 500),
     commands: {},
+    tools: {},
   };
   const cmds = def.commands || {};
   for (const [raw, val] of Object.entries(cmds)) {
@@ -59,6 +78,35 @@ function validatePluginObject(def) {
         handler: val.handler,
       };
     } else throw new Error(`definePlugin: command '${name}' needs a function or { handler }`);
+  }
+  const tls = def.tools || {};
+  for (const [raw, val] of Object.entries(tls)) {
+    const tname = String(raw || "").trim();
+    if (!validTool(tname)) throw new Error(`definePlugin: bad tool name '${raw}' (use [A-Za-z0-9_-], max 32)`);
+    if (typeof val === "function") {
+      out.tools[tname] = { handler: val, description: "", parameters: { type: "object", properties: {} } };
+    } else if (val && typeof val.handler === "function") {
+      let params = val.parameters;
+      if (typeof params === "string") {
+        try { params = JSON.parse(params); } catch { throw new Error(`definePlugin: tool '${tname}' has bad JSON parameters`); }
+      }
+      if (!params || typeof params !== "object") params = { type: "object", properties: {} };
+      out.tools[tname] = {
+        handler: val.handler,
+        description: String(val.description || "").slice(0, 500),
+        parameters: params,
+      };
+    } else throw new Error(`definePlugin: tool '${tname}' needs a function or { handler }`);
+  }
+  const hks = (def.hooks && typeof def.hooks === "object") ? def.hooks : {};
+  out.hooks = { input: [], output: [], beforeTool: [], afterTool: [] };
+  for (const kind of HOOK_KINDS) {
+    const v = hks[kind];
+    const list = Array.isArray(v) ? v : (typeof v === "function" ? [v] : []);
+    for (const fn of list) {
+      if (typeof fn !== "function") throw new Error(`definePlugin: hook '${kind}' must be a function or array of functions`);
+      out.hooks[kind].push(fn);
+    }
   }
   if (def.onLoad !== undefined) {
     if (typeof def.onLoad !== "function") throw new Error("definePlugin: onLoad must be a function");
@@ -121,6 +169,60 @@ async function testPlugin(pluginDefOrPath, command, args = "") {
     return { ok: true, replies, edits };
   } catch (e) {
     return { ok: false, replies, edits, error: String((e && e.message) || e) };
+  }
+}
+
+async function testTool(pluginDefOrPath, toolName, args = {}) {
+  let mod = pluginDefOrPath;
+  if (typeof mod === "string") {
+    const resolved = path.resolve(mod);
+    delete require.cache[resolved];
+    mod = require(resolved);
+    if (mod && mod.__esModule && mod.default) mod = mod.default;
+  }
+  if (typeof mod === "function" && !mod.commands) mod = (await mod({ log() {} })) || {};
+  const plugin = validatePluginObject(mod);
+  const tname = String(toolName || "").trim();
+  const entry = plugin.tools[tname];
+  if (!entry) throw new Error(`testTool: unknown tool '${toolName}' (have: ${Object.keys(plugin.tools).join(", ") || "none"})`);
+  let argObj = args;
+  if (typeof argObj === "string") {
+    try { argObj = JSON.parse(argObj); } catch { throw new Error("testTool: args string must be JSON"); }
+  }
+  const fakeCtx = { from: { id: 1 }, chat: { id: 1, type: "private" } };
+  const api = { bot: null, config: {}, runTool: async () => "(test stub)", storage: { get: () => null, list: () => [], save: () => false }, chat: null, log() {}, pluginsDir: "" };
+  try {
+    const result = await entry.handler(argObj || {}, fakeCtx, api);
+    return { ok: true, result: typeof result === "string" ? result : JSON.stringify(result) };
+  } catch (e) {
+    return { ok: false, error: String((e && e.message) || e) };
+  }
+}
+
+async function testHook(pluginDefOrPath, hookName, ...hookArgs) {
+  const kind = String(hookName || "").trim();
+  if (!HOOK_KINDS.includes(kind)) throw new Error(`testHook: unknown hook '${hookName}' (have: ${HOOK_KINDS.join(", ")})`);
+  let mod = pluginDefOrPath;
+  if (typeof mod === "string") {
+    const resolved = path.resolve(mod);
+    delete require.cache[resolved];
+    mod = require(resolved);
+    if (mod && mod.__esModule && mod.default) mod = mod.default;
+  }
+  if (typeof mod === "function" && !mod.commands) mod = (await mod({ log() {} })) || {};
+  const plugin = validatePluginObject(mod);
+  const fns = plugin.hooks[kind];
+  if (!fns.length) throw new Error(`testHook: plugin has no '${kind}' hook`);
+  const fakeCtx = { from: { id: 1 }, chat: { id: 1, type: "private" } };
+  const api = { bot: null, config: {}, runTool: async () => "(test stub)", storage: { get: () => null, list: () => [], save: () => false }, chat: null, log() {}, pluginsDir: "" };
+  const calls = [];
+  try {
+    for (const fn of fns) {
+      calls.push(await fn(...hookArgs, fakeCtx, api));
+    }
+    return { ok: true, results: calls };
+  } catch (e) {
+    return { ok: false, calls, error: String((e && e.message) || e) };
   }
 }
 
@@ -198,4 +300,4 @@ function createAgent(opts = {}) {
   return { baseURL, model, chat, splitTG, commandArgs };
 }
 
-module.exports = { definePlugin, testPlugin, createAgent, splitTG, escapeMarkdown, commandArgs, validId, validCmd };
+module.exports = { definePlugin, testPlugin, testTool, testHook, HOOK_KINDS, createAgent, splitTG, escapeMarkdown, commandArgs, validId, validCmd, validTool };

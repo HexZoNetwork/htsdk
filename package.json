@@ -8,6 +8,6 @@
   "keywords": ["hextelegram", "telegram", "bot", "sdk", "plugins", "ai", "agent"],
   "scripts": {
     "example": "node examples/custom-agent.js",
-    "test": "node -e \"(async () => { const s = require('./index.js'); require('./plugin.js'); require('./auth-providers.js'); const f = s.definePlugin(() => ({ commands: { hi: async () => {} } })); await f({}); const r = await s.testPlugin('./examples/hello-plugin.js', 'echo', 'hi'); if (!r.ok || r.replies[0] !== 'hi') throw new Error('testPlugin failed'); console.log('htsdk ok'); })().catch((e) => { console.error(e.message); process.exit(1); })\""
+    "test": "node -e \"(async () => { const s = require('./index.js'); require('./plugin.js'); require('./auth-providers.js'); const f = s.definePlugin(() => ({ commands: { hi: async () => {} } })); await f({}); const r = await s.testPlugin('./examples/hello-plugin.js', 'echo', 'hi'); if (!r.ok || r.replies[0] !== 'hi') throw new Error('testPlugin failed'); const t = await s.testTool('./examples/hello-plugin.js', 'shout_text', { text: 'hey' }); if (!t.ok || t.result !== 'HEY') throw new Error('testTool failed'); const h = await s.testHook('./examples/hooks-plugin.js', 'beforeTool', 'shell_exec', { command: 'ls' }); if (!h.ok) throw new Error('testHook failed'); console.log('htsdk ok'); })().catch((e) => { console.error(e.message); process.exit(1); })\""
   }
 }
