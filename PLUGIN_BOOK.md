@@ -128,13 +128,20 @@ Keep replies ≤4000 chars per message (`splitTG` helps). Keep handlers fast.
 
 ## 7. Local workflow (no live bot)
 
+Install once, then the `htsdk` command works from anywhere - no `node`, no paths:
+
 ```bash
-node cli.js new mymod
-node cli.js check mymod.js
-node cli.js test mymod.js hello world
-node cli.js tool mymod.js shout_text '{"text":"hey"}'
-node cli.js hook mymod.js beforeTool '["shell_exec", {"command":"ls"}]'
+npm install github:HexZoNetwork/htsdk
+htsdk new mymod
+htsdk check mymod.js
+htsdk test mymod.js hello world
+htsdk tool mymod.js shout_text '{"text":"hey"}'
+htsdk hook mymod.js beforeTool '["shell_exec", {"command":"ls"}]'
+htsdk help
 ```
+
+File args (`mymod.js`) resolve from your current directory. Without installing,
+run the file directly: `node /path/to/htsdk/cli.js new mymod`.
 
 Or in code: `definePlugin`, `testPlugin`, `testTool`, `testHook` from `htsdk`.
 Ship: send the file to the bot, reply `/plugin`, manage with

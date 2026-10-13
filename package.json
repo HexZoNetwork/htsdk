@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "HexTelegram SDK, build custom agents + plugins for HexTelegram",
   "main": "index.js",
+  "bin": {
+    "htsdk": "cli.js"
+  },
   "type": "commonjs",
   "license": "SEE LICENSE IN LICENCE",
   "keywords": ["hextelegram", "telegram", "bot", "sdk", "plugins", "ai", "agent"],
