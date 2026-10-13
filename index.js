@@ -250,6 +250,42 @@ function commandArgs(text) {
   return { cmd: m[1].toLowerCase(), arg: (m[4] || "").trim() };
 }
 
+function scaffoldPlugin(id) {
+  const clean = String(id || "").trim();
+  if (!validId(clean)) throw new Error("scaffoldPlugin: bad id (use [A-Za-z0-9_-], max 48)");
+  return [
+    '"use strict";',
+    "",
+    "module.exports = {",
+    "  name: " + JSON.stringify(clean) + ",",
+    '  version: "1.0.0",',
+    '  description: "",',
+    "",
+    "  commands: {",
+    "    hello: async (ctx, args) => {",
+    '      await ctx.reply("hi " + String(args || "").trim());',
+    "    },",
+    "  },",
+    "",
+    "  tools: {",
+    "    shout_text: {",
+    '      description: "Uppercase text",',
+    '      parameters: { type: "object", properties: { text: { type: "string" } }, required: ["text"] },',
+    '      handler: async (args) => String((args || {}).text || "").toUpperCase().slice(0, 500),',
+    "    },",
+    "  },",
+    "",
+    "  hooks: {",
+    "    input: async (text) => text,",
+    "    output: async (text) => text,",
+    "    beforeTool: async (name, args) => null,",
+    "    afterTool: async (name, args, result) => result,",
+    "  },",
+    "};",
+    "",
+  ].join("\n");
+}
+
 /**
  * Minimal agent scaffold compatible with HexTelegram tool-calling shape.
  * This does NOT include Telegram wiring - bring your own Telegraf/bot.
@@ -301,4 +337,4 @@ function createAgent(opts = {}) {
   return { baseURL, model, chat, splitTG, commandArgs };
 }
 
-module.exports = { definePlugin, testPlugin, testTool, testHook, HOOK_KINDS, createAgent, splitTG, escapeMarkdown, commandArgs, validId, validCmd, validTool };
+module.exports = { definePlugin, testPlugin, testTool, testHook, HOOK_KINDS, createAgent, splitTG, escapeMarkdown, commandArgs, validId, validCmd, validTool, scaffoldPlugin };
